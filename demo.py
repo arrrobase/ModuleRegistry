@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -5,11 +6,15 @@ from nems.signal import PointProcess
 
 from registry import ModuleRegistry
 
+# not sure why NEMS defaults logging level so low
+logging.getLogger().setLevel(level=logging.WARNING)
+
 # this would be done depending on dirs listed in settings.py
 default_module_dir = Path(r'modules').absolute()
 ModuleRegistry.load_directory(default_module_dir)
 
-# Example of loading by single file. This will override the keywords. Notice the different path specs
+# Example of loading by single file. This will override the keywords and generate a
+# warning. Notice the different path specs since couldn't resolve spec dir.
 fir_module = Path(r'modules/fir.py').absolute()
 sig_module = Path(r'modules/nonlinearity.py').absolute()
 ModuleRegistry.load_module(fir_module)

@@ -18,3 +18,6 @@ class Sigmoid(ModuleBase):
                    + np.tanh(phis['kappa'] * (signal - phis['shift']))
 
         return fn
+
+    def parse_kw(self, kw_string: str):
+        raise NotImplementedError

@@ -32,3 +32,6 @@ class FIRBasic(FIRBase):
             return self.per_channel(signal, coefficients, non_causal=kwargs['non_causal'], rate=1)
 
         return fn
+
+    def parse_kw(self, kw_string: str):
+        raise NotImplementedError
