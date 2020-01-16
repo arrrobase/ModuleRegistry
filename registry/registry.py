@@ -1,9 +1,12 @@
-from pathlib import Path
 import importlib.util
+import logging
+from pathlib import Path
 
 from tabulate import tabulate
 
 from modulebase import ModuleBase
+
+logger = logging.getLogger(__name__)
 
 
 class RegistryError(Exception):
@@ -61,7 +64,7 @@ class ModuleRegistry:
         """Registers a class with the registry.
 
         :param module_class:
-        :param kw: Optional kw to add to the keyword registry
+        :param kw: Optional kw to add to the keyword registry.
         """
         if not issubclass(module_class, ModuleBase):
             raise TypeError(f'Modules must inherit from "ModuleBase".')
@@ -75,17 +78,41 @@ class ModuleRegistry:
         Decorators are only called at import time, so if a class is never imported, the module
         will not get registered. Prior to activating the registry, call this method on the
         directories containing the modules.
+
+        :param directory: Directory of python files to import. Ignores "__init__.py".
         """
         directory = Path(directory)
         if not directory.exists():
             raise FileNotFoundError('The directory could not be found.')
 
         for module in directory.glob('**/*.py'):
-            if module.name not in ['__init__.py']:
+            if module.name != '__init__.py':
                 spec_root = str(module.relative_to(directory.parent).with_suffix('')).replace('/', '.')
-                spec = importlib.util.spec_from_file_location(spec_root, module)
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
+                ModuleRegistry.load_module(module, spec_root)
+
+    @classmethod
+    def load_module(cls, module, spec_root=None):
+        """Imports single .py file, in order for module to be registered.
+
+        Decorators are only called at import time, so if a class is never imported, the module
+        will not get registered. Prior to activating the registry, call this method on the
+        file containing the modules.
+
+        It is better to import from a directory, even for single modules, because the module pathspec will
+        be able to be resolved to that directory. Using the single file method, the pathspec can't be resolved
+        and is instead just set to the module name. This can result in conflicts in the registry
+        if two modules have the same name and pathspec.
+
+        :param file: File to import.
+        """
+        file = Path(module)
+
+        if spec_root is None:
+            spec_root = file.stem
+
+        spec = importlib.util.spec_from_file_location(spec_root, module)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
 
     def activate(self):
         """Instantiates and adds subclasses to registries.
@@ -96,14 +123,15 @@ class ModuleRegistry:
         for cls, kw in ModuleRegistry.subclasses:
             module_instance = cls()
             self.path_dict[module_instance.spec] = module_instance
+            logger.info(f'Activated module "{module_instance.spec}".')
 
             if kw is not None:
                 # add keyword to instance
                 module_instance.kw = kw
 
                 if kw in self.kw_registry:
-                    print(f'WARN: overriding keyword "{kw}". '
-                          f'Replacing "{self.kw_registry[kw].spec}" with "{module_instance.spec}".')
+                    logger.warning(f'Overriding keyword "{kw}", replacing "{self.kw_registry[kw].spec}" '
+                                   f'with "{module_instance.spec}".')
                 self.kw_registry[kw] = module_instance
 
         return self
@@ -134,15 +162,16 @@ class ModuleRegistry:
 
 
 class KeywordRegistry(dict):
-    """Registry of keywords"""
+    """Registry of keywords. Subclasses dict to override getter and str."""
     def __getitem__(self, item):
+        """Raise KeywordMissingError instead."""
         if item not in self:
             raise KeywordMissingError(item)
 
         return super().__getitem__(item)
 
     def __str__(self):
-        """Print a pretty table instead of a dict"""
+        """Print a pretty table instead of a dict."""
         modules = self.values()
         keywords = self.keys()
 
@@ -152,8 +181,14 @@ class KeywordRegistry(dict):
 
 
 def register_module(kw=None):
-    """Decorator function to register modules with the registry"""
+    """Decorator function to register modules with the registry."""
     def inner(cls):
         ModuleRegistry.register(cls, kw=kw)
+
+        if kw is not None:
+            logger.info(f'Registered module "{cls.name}" with keyword "{kw}".')
+        else:
+            logger.info(f'Registered module "{cls.name} without keyword".')
+
         return cls
     return inner
