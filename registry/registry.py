@@ -74,6 +74,13 @@ class ModuleRegistry:
 
         cls.subclasses.append((module_class, kw))
 
+        if kw is not None:
+            logger.info(f'Registered module "{cls.name}" with keyword "{kw}".')
+        else:
+            logger.info(f'Registered module "{cls.name} without keyword".')
+
+        return cls
+
     @classmethod
     def load_directory(cls, directory):
         """Recursively imports .py files in a directory, in order for modules to be registered.
@@ -187,11 +194,4 @@ def register_module(kw=None):
     """Decorator function to register modules with the registry."""
     def inner(cls):
         ModuleRegistry.register(cls, kw=kw)
-
-        if kw is not None:
-            logger.info(f'Registered module "{cls.name}" with keyword "{kw}".')
-        else:
-            logger.info(f'Registered module "{cls.name} without keyword".')
-
-        return cls
     return inner
