@@ -6,8 +6,14 @@ from nems.signal import PointProcess
 from registry import ModuleRegistry
 
 # this would be done depending on dirs listed in settings.py
-default_module_dir = Path(r'/home/tomlinsa/code/ModuleRegistry/modules')
+default_module_dir = Path(r'modules').absolute()
 ModuleRegistry.load_directory(default_module_dir)
+
+# Example of loading by single file. This will override the keywords. Notice the different path specs
+fir_module = Path(r'modules/fir.py').absolute()
+sig_module = Path(r'modules/nonlinearity.py').absolute()
+ModuleRegistry.load_module(fir_module)
+ModuleRegistry.load_module(sig_module)
 
 # setup a test signal
 points = np.random.randint(0, 100, size=(10, 600))
@@ -15,8 +21,9 @@ names = [f'channel{i}' for i in range(points.shape[0])]
 data = dict(zip(names, points))
 s = PointProcess(fs=60, data=data, name='test', recording='test')
 
-# setup and activate registry
+# setup and activate registry, and display registry contents
 module_registry = ModuleRegistry().activate()
+print()
 print(module_registry, end='\n\n')
 print(module_registry.kw_registry, end='\n\n')
 
