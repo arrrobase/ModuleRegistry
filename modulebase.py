@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 class ModuleBase(ABC):
     """Base module class. Defines interface for modules.
 
-    Modules are instantiated by the registry, and thus will raise an error if do not implement
-    all the necessary properties/methods.
+    Modules are instantiated by the registry, and thus will raise an error if they
+    do not implement all the necessary properties/methods.
 
     Required properties:
     - name (str): The name of the module
@@ -14,6 +14,8 @@ class ModuleBase(ABC):
 
     Required methods:
     - get_fn(phis, kwargs): Returns the function that is used by Signal.transform()
+
+    Additionally, if a kw is used when registering the module, then a "parse_kw" method is required.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

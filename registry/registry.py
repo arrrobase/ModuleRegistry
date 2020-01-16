@@ -75,9 +75,9 @@ class ModuleRegistry:
         cls.subclasses.append((module_class, kw))
 
         if kw is not None:
-            logger.info(f'Registered module "{cls.name}" with keyword "{kw}".')
+            logger.info(f'Registered module "{module_class.name}" with keyword "{kw}".')
         else:
-            logger.info(f'Registered module "{cls.name} without keyword".')
+            logger.info(f'Registered module "{module_class.name} without keyword".')
 
         return cls
 
@@ -138,6 +138,9 @@ class ModuleRegistry:
             if kw is not None:
                 # add keyword to instance
                 module_instance.kw = kw
+                if not hasattr(cls, 'parse_kw'):
+                    raise AttributeError(f'Missing "parse_kw" method for module "{module_instance.spec}". '
+                                         'Modules with keywords require a "parse_kw" method.')
 
                 if kw in self.kw_registry:
                     logger.warning(f'Overriding keyword "{kw}", replacing "{self.kw_registry[kw].spec}" '
