@@ -6,6 +6,8 @@ from tabulate import tabulate
 
 from modulebase import ModuleBase
 
+logger = logging.getLogger(__name__)
+
 
 logger = logging.getLogger(__name__)
 
