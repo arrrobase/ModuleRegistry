@@ -43,7 +43,7 @@ class ModuleBase(ABC):
     def spec(self): return self._spec
 
     @abstractmethod
-    def get_fn(self, *, phis: dict=None, kwargs: dict=None) : ...
+    def get_fn(self, *, phis: dict=None, kwargs: dict=None): ...
 
     def __str__(self):
         return self.name

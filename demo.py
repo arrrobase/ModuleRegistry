@@ -52,3 +52,6 @@ print(f'{m_fir.name} applied')
 s = (s.transform(m_sig(phis=sig_phis, kwargs=sig_kwargs))
       .transform(m_fir(phis=fir_phis, kwargs=fir_kwargs))
      )
+
+print()
+print(module_registry.get_by_kw('wc').parse_kw('5x2.g'))
