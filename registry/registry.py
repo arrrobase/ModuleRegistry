@@ -9,12 +9,16 @@ from modulebase import ModuleBase
 logger = logging.getLogger(__name__)
 
 
-logger = logging.getLogger(__name__)
-
-
 class RegistryError(Exception):
     """Base exception for registry errors."""
     pass
+
+
+class ModuleMissingError(RegistryError):
+    """Raised when a module lookup fails."""
+    def __init__(self, value):
+        default_message = f'"{value}" could not be found in the module registry.'
+        super().__init__(default_message)
 
 
 class KeywordMissingError(RegistryError):
@@ -24,11 +28,9 @@ class KeywordMissingError(RegistryError):
         super().__init__(default_message)
 
 
-class ModuleMissingError(RegistryError):
-    """Raised when a module lookup fails."""
-    def __init__(self, value):
-        default_message = f'"{value}" could not be found in the module registry.'
-        super().__init__(default_message)
+class KeywordFormatError(RegistryError):
+    """Raised when malformed keyword string"""
+    pass
 
 
 class ModuleRegistry:
